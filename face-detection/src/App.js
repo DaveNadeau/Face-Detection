@@ -12,7 +12,7 @@ import "tachyons";
 import './App.css';
 
 const app = new Clarifai.App({
-  apiKey: ''
+  apiKey: '964dd6eb1aeb4b94a43d7c4a65a5ac6e'
 });
 
 const particleOptions = {
@@ -37,8 +37,36 @@ class App extends Component {
       imageURL: '',
       box: {},
       route: 'signIn',
-      isSignedIn: false
+      isSignedIn: false,
+      user:{
+        id: '',
+        name: '',
+        //password: '', //don't need to return password!!!!
+        email: '',
+        entries: 0,
+        joined: ''
+      }
     }
+  }
+
+      ////INTEGRATING NODE BACKEND EXAMPLE- THIS IS A TEST EXAMPLE////
+  // componentDidMount() {
+  //   //note the port 4000 is what the server.js in the face-detection-api is listen on
+  //   fetch('http://localhost:4000/')
+  //     .then(response => response.json())
+  //     .then(data => console.log(data)); //the last .then could be .then(console.log);
+  // }
+
+  loadUser = (data) => {
+    this.setState(
+      {user:{
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        entries: data.entries,
+        joined: data.joined
+        }
+      })
   }
 
   calculateFaceLocation = (data) => {
@@ -67,7 +95,22 @@ class App extends Component {
     this.setState({imageURL: this.state.input});
 
     app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-      .then( response => this.displayFaceBox(this.calculateFaceLocation(response)))
+      .then( response => {
+        if (response) {
+          fetch('http://localhost:4000/image', {   //NOTE: localhost:4000 is set in app.listen in server.js
+            method: 'put',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              id: this.state.user.id
+            })
+          })
+          .then(response => response.json())  //takes json response and preps it for next step
+          .then(count => {      //entries is incremented server side (and sent as the response), this takes the server response and updates the web interface
+            this.setState(Object.assign(this.state.user, {entries: count}))
+          })
+        }
+        this.displayFaceBox(this.calculateFaceLocation(response))
+      })
       .catch(err => console.log(err));
   }
 
@@ -91,7 +134,7 @@ class App extends Component {
         {route === 'home'
           ? <div>
               <Logo />
-              <Rank />
+              <Rank name={this.state.user.name} entries={this.state.user.entries}/> {/*entries pulled from json put response*/}
               <ImageLinkForm
                 onInputChange={this.onInputChange}
                 onButtonSubmit={this.onButtonSubmit}
@@ -100,8 +143,8 @@ class App extends Component {
             </div>
             :(
               route === 'signIn'
-              ? <SignIn onRouteChange={this.onRouteChange}/>
-              : <Register onRouteChange={this.onRouteChange}/>
+              ? <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
+              : <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
             )
           }
       </div>

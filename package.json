@@ -1,0 +1,20 @@
+{
+  "name": "Face-Detection",
+  "version": "1.0.0",
+  "description": "Face detection using clarifai API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DaveNadeau/Face-Detection.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DaveNadeau/Face-Detection/issues"
+  },
+  "homepage": "https://github.com/DaveNadeau/Face-Detection#readme"
+}
